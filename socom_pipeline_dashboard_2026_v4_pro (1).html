@@ -1,0 +1,373 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.dash { padding: 1.5rem 0; font-family: var(--font-sans); }
+.hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 12px; }
+.ttl { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 3px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fl { font-size: 12px; color: var(--color-text-secondary); }
+select { font-size: 13px; padding: 6px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); }
+
+.insight-bar { background: var(--color-background-secondary); border-left: 3px solid #378ADD; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 10px 14px; margin-bottom: 1.25rem; font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+.insight-bar strong { color: var(--color-text-primary); font-weight: 500; }
+
+.section-lbl { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.25rem 0 0.6rem; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+.kpi { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 14px 16px; }
+.kpi-lbl { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.kpi-val { font-size: 26px; font-weight: 500; color: var(--color-text-primary); line-height: 1.1; }
+.kpi-delta { font-size: 12px; margin-top: 4px; }
+.kpi-accent { border-left: 3px solid; }
+.bl { border-color: #378ADD; }
+.tl { border-color: #1D9E75; }
+.am { border-color: #BA7517; }
+.rd { border-color: #E24B4A; }
+.co { border-color: #D85A30; }
+.c-green { color: #1D9E75; }
+.c-red { color: #E24B4A; }
+.c-muted { color: var(--color-text-secondary); }
+
+.mix-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.mix-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; }
+.mix-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.mix-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+.mix-pct-badge { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 99px; }
+.mix-rev { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.mix-net { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.mix-bar-wrap { margin-top: 10px; background: var(--color-background-secondary); border-radius: 3px; height: 5px; }
+.mix-bar { height: 5px; border-radius: 3px; }
+
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.ct { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.cs { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 10px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; font-size: 11px; color: var(--color-text-secondary); }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+
+.detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+
+.ach-bar-wrap { margin: 8px 0 3px; background: var(--color-background-primary); border-radius: 3px; height: 8px; width: 100%; overflow:hidden; }
+.ach-bar-fill { height: 8px; border-radius: 3px; }
+</style>
+
+<div class="dash">
+
+  <!-- HEADER + FILTERS -->
+  <div class="hdr">
+    <div>
+      <div class="ttl">SoCom Revenue Dashboard 2026</div>
+      <div class="sub">Social Commerce · T03 YTD–YTG March</div>
+    </div>
+    <div class="filters">
+      <span class="fl">Período:</span>
+      <select id="period-filter" onchange="updateDash()">
+        <option value="fy">Full Year 2026</option>
+        <option value="ytd" selected>YTD (Ene–Mar)</option>
+        <option value="q1">Q1</option>
+        <option value="q2">Q2</option>
+        <option value="q3">Q3</option>
+        <option value="q4">Q4</option>
+      </select>
+      <span class="fl">Vista:</span>
+      <select id="view-filter" onchange="updateDash()">
+        <option value="all">Pipeline</option>
+        <option value="won">Won + Guaranteed</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- INSIGHT BAR -->
+  <div class="insight-bar" id="insight-text">
+    Pipeline concentrado en <strong>Farming y Existing Business</strong>. New Business aparece en meses puntuales — señal de dependencia de pipeline estructural.
+  </div>
+
+  <!-- BLOQUE 1: KPI CARDS -->
+  <div class="section-lbl">Métricas clave · <span id="period-lbl-kpi">YTD Ene–Mar</span></div>
+  <div class="kpi-grid">
+    <div class="kpi kpi-accent tl">
+      <div class="kpi-lbl">Revenue Secured (Won+Guar)</div>
+      <div class="kpi-val" id="kpi-secured">€351K</div>
+      <div class="kpi-delta c-muted" id="kpi-secured-net">Net: €106K</div>
+    </div>
+    <div class="kpi kpi-accent bl">
+      <div class="kpi-lbl">Pipeline (open deals)</div>
+      <div class="kpi-val" id="kpi-pipeline">€566K</div>
+      <div class="kpi-delta c-muted" id="kpi-pipeline-net">Net: €252K</div>
+    </div>
+    <div class="kpi kpi-accent am">
+      <div class="kpi-lbl">Total vs Target FY (%)</div>
+      <div class="kpi-val" id="kpi-ach">11.0%</div>
+      <div class="ach-bar-wrap"><div class="ach-bar-fill" id="kpi-ach-bar" style="width:11%;background:#BA7517"></div></div>
+      <div class="kpi-delta c-muted">Target: €3.55M</div>
+    </div>
+    <div class="kpi kpi-accent rd">
+      <div class="kpi-lbl">Gap to Target (€)</div>
+      <div class="kpi-val c-red" id="kpi-gap">€2.24M</div>
+      <div class="kpi-delta c-muted" id="kpi-gap-net">Net gap: €620K</div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 2: MIX POR TIPO -->
+  <div class="section-lbl">Mix por tipo de deal · <span id="period-lbl-mix">YTD Ene–Mar</span></div>
+  <div class="mix-grid">
+    <div class="mix-card">
+      <div class="mix-top">
+        <div class="mix-name">Existing Business</div>
+        <div class="mix-pct-badge" id="eb-badge" style="background:#E6F1FB;color:#185FA5;">35%</div>
+      </div>
+      <div class="mix-rev" id="eb-mix-rev">€245K</div>
+      <div class="mix-net" id="eb-mix-net">Net: €165K</div>
+      <div class="mix-bar-wrap"><div class="mix-bar" id="eb-mix-bar" style="background:#378ADD;width:35%"></div></div>
+    </div>
+    <div class="mix-card">
+      <div class="mix-top">
+        <div class="mix-name">Farming</div>
+        <div class="mix-pct-badge" id="fm-badge" style="background:#E1F5EE;color:#0F6E56;">37%</div>
+      </div>
+      <div class="mix-rev" id="fm-mix-rev">€206K</div>
+      <div class="mix-net" id="fm-mix-net">Net: €41K</div>
+      <div class="mix-bar-wrap"><div class="mix-bar" id="fm-mix-bar" style="background:#1D9E75;width:37%"></div></div>
+    </div>
+    <div class="mix-card">
+      <div class="mix-top">
+        <div class="mix-name">New Business</div>
+        <div class="mix-pct-badge" id="nb-badge" style="background:#FAECE7;color:#993C1D;">21%</div>
+      </div>
+      <div class="mix-rev" id="nb-mix-rev">€115K</div>
+      <div class="mix-net" id="nb-mix-net">Net: €46K</div>
+      <div class="mix-bar-wrap"><div class="mix-bar" id="nb-mix-bar" style="background:#D85A30;width:21%"></div></div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 3: STACKED PRINCIPAL -->
+  <div class="section-lbl" style="margin-top:1.5rem;">Revenue build-up by deal type · <span id="period-lbl-stack">YTD Ene–Mar</span></div>
+  <div class="chart-card">
+    <div class="ct">Revenue Build-Up by Deal Type (Close Date based)</div>
+    <div class="cs" id="stack-sub">Distribución mensual Rev € · todos los tipos</div>
+    <div class="legend">
+      <span><span class="sw" style="background:#378ADD"></span>Existing Business</span>
+      <span><span class="sw" style="background:#1D9E75"></span>Farming</span>
+      <span><span class="sw" style="background:#D85A30"></span>New Business</span>
+    </div>
+    <div style="position:relative;width:100%;height:240px;"><canvas id="chartStack"></canvas></div>
+  </div>
+
+  <!-- BLOQUE 4: DETALLE POR TIPO -->
+  <div class="section-lbl" style="margin-top:1.5rem;">Detalle por tipo · <span id="period-lbl-detail">YTD Ene–Mar</span></div>
+  <div class="detail-grid">
+    <div class="chart-card">
+      <div class="ct">Existing Business</div>
+      <div class="cs">Rev vs Net mensual</div>
+      <div class="legend">
+        <span><span class="sw" style="background:#378ADD"></span>Rev</span>
+        <span><span class="sw" style="background:#B5D4F4"></span>Net</span>
+      </div>
+      <div style="position:relative;width:100%;height:160px;"><canvas id="chartEB"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">Farming</div>
+      <div class="cs">Rev vs Net mensual</div>
+      <div class="legend">
+        <span><span class="sw" style="background:#1D9E75"></span>Rev</span>
+        <span><span class="sw" style="background:#9FE1CB"></span>Net</span>
+      </div>
+      <div style="position:relative;width:100%;height:160px;"><canvas id="chartFM"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">New Business</div>
+      <div class="cs" id="nb-insight">Rev vs Net mensual</div>
+      <div class="legend">
+        <span><span class="sw" style="background:#D85A30"></span>Rev</span>
+        <span><span class="sw" style="background:#F5C4B3"></span>Net</span>
+      </div>
+      <div style="position:relative;width:100%;height:160px;"><canvas id="chartNB"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 5: FY VS TARGET -->
+  <div class="section-lbl" style="margin-top:1.5rem;">FY 2026 · Won+Guaranteed vs Targets</div>
+  <div class="chart-card">
+    <div class="ct">Progreso anual vs objetivos</div>
+    <div class="cs">Revenue acumulado · Won+Guaranteed vs Target Oficial (x3) vs Stretch (x5)</div>
+    <div class="legend">
+      <span><span class="sw" style="background:#378ADD"></span>FY Trend Won+Guar (€1.31M)</span>
+      <span><span class="sw" style="background:#1D9E75"></span>YTD Won+Guar (€351K)</span>
+      <span><span class="sw" style="background:#E24B4A"></span>Target Oficial x3 (€3.55M)</span>
+      <span><span class="sw" style="background:#BA7517"></span>Target Stretch x5 (€5.91M)</span>
+    </div>
+    <div style="position:relative;width:100%;height:180px;"><canvas id="chartTarget"></canvas></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const RANGES = { fy:[0,11], ytd:[0,2], q1:[0,2], q2:[3,5], q3:[6,8], q4:[9,11] };
+const PLABELS = { fy:'Full Year 2026', ytd:'YTD Ene–Mar', q1:'Q1 (Ene–Mar)', q2:'Q2 (Abr–Jun)', q3:'Q3 (Jul–Sep)', q4:'Q4 (Oct–Dic)' };
+
+const D = {
+  eb: {
+    rev:     [10312,108630,126124,47050,35083,35083,21443,70282,21443,21443,21443,21443],
+    net:     [1446,56281,107329,18936,19835,19835,6195,18404,6195,6195,6195,6195],
+    won_rev: [10312,108630,16594,23170,13640,13640,0,0,0,0,0,0],
+    won_net: [1446,56281,10001,4680,0,0,0,0,0,0,0,0]
+  },
+  fm: {
+    rev:     [83640,13640,108640,158000,0,0,0,0,48839,248839,198839,36000],
+    net:     [13640,13640,13640,56400,0,0,0,0,12210,212210,132210,36000],
+    won_rev: [83640,13640,108640,0,0,0,0,0,0,0,0,0],
+    won_net: [13640,13640,13640,0,0,0,0,0,0,0,0,0]
+  },
+  nb: {
+    rev:     [0,0,115331,277578,0,0,0,0,0,0,0,0],
+    net:     [0,0,46133,61409,0,0,0,0,0,0,0,0],
+    won_rev: [0,0,0,277578,0,0,0,0,0,0,0,0],
+    won_net: [0,0,0,61409,0,0,0,0,0,0,0,0]
+  }
+};
+
+const SUM = {
+  ytd_pipe_rev:566318, ytd_pipe_net:252109,
+  ytd_won_rev:350987, ytd_won_net:105976,
+  fy_won_rev:1305422, fy_won_net:393132,
+  fy_pipe_rev:1829123,
+  target_rev:3548363, target_net:1013382,
+  stretch_rev:5913938
+};
+
+let CH = {};
+
+function fmt(v) {
+  if (v>=1000000) return '€'+(v/1000000).toFixed(2)+'M';
+  if (v>=1000) return '€'+Math.round(v/1000)+'K';
+  return '€'+Math.round(v);
+}
+function pct(a,b) { return b>0 ? Math.round(a/b*100)+'%' : '0%'; }
+function sl(arr,r) { return arr.slice(r[0],r[1]+1); }
+function sm(arr,r) { return arr.slice(r[0],r[1]+1).reduce((a,b)=>a+b,0); }
+
+function bar(id, labels, datasets, stacked) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (CH[id]) CH[id].destroy();
+  CH[id] = new Chart(ctx, {
+    type:'bar', data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},
+      scales:{
+        x:{stacked:!!stacked, ticks:{autoSkip:false, maxRotation:45, font:{size:10}}, grid:{display:false}},
+        y:{stacked:!!stacked, ticks:{font:{size:10}, callback:v=>fmt(v)}, grid:{color:'rgba(128,128,128,0.07)'}}
+      }
+    }
+  });
+}
+
+function setTxt(ids, val) { ids.forEach(id => { const el=document.getElementById(id); if(el) el.textContent=val; }); }
+
+function updateDash() {
+  const period = document.getElementById('period-filter').value;
+  const won = document.getElementById('view-filter').value === 'won';
+  const r = RANGES[period];
+  const pl = PLABELS[period];
+  const labels = MONTHS.slice(r[0], r[1]+1);
+  const rk = won ? 'won_rev' : 'rev';
+  const nk = won ? 'won_net' : 'net';
+
+  setTxt(['period-lbl-kpi','period-lbl-mix','period-lbl-stack','period-lbl-detail'], pl);
+
+  // Period sums
+  const ebR=sm(D.eb[rk],r), ebN=sm(D.eb[nk],r);
+  const fmR=sm(D.fm[rk],r), fmN=sm(D.fm[nk],r);
+  const nbR=sm(D.nb[rk],r), nbN=sm(D.nb[nk],r);
+  const totalR = ebR+fmR+nbR;
+
+  // KPI block (always uses FY summary for won+guar reference)
+  const securedRev = won ? SUM.ytd_won_rev : sm(D.eb[rk],r)+sm(D.fm[rk],r)+sm(D.nb[rk],r);
+  const securedNet = won ? SUM.ytd_won_net : sm(D.eb[nk],r)+sm(D.fm[nk],r)+sm(D.nb[nk],r);
+  const pipelineRev = won ? SUM.fy_won_rev : SUM.ytd_pipe_rev;
+  const pipelineNet = won ? SUM.fy_won_net : SUM.ytd_pipe_net;
+  const achPct = Math.round(SUM.fy_won_rev / SUM.target_rev * 100);
+  const gapRev = SUM.target_rev - SUM.fy_won_rev;
+  const gapNet = SUM.target_net - SUM.fy_won_net;
+
+  document.getElementById('kpi-secured').textContent = fmt(securedRev);
+  document.getElementById('kpi-secured-net').textContent = 'Net: '+fmt(securedNet);
+  document.getElementById('kpi-pipeline').textContent = fmt(pipelineRev);
+  document.getElementById('kpi-pipeline-net').textContent = 'Net: '+fmt(pipelineNet);
+  document.getElementById('kpi-ach').textContent = achPct+'%';
+  document.getElementById('kpi-ach-bar').style.width = Math.min(achPct,100)+'%';
+  document.getElementById('kpi-gap').textContent = fmt(gapRev);
+  document.getElementById('kpi-gap-net').textContent = 'Net gap: '+fmt(gapNet);
+
+  // Mix block
+  const ebPct = totalR>0 ? Math.round(ebR/totalR*100) : 0;
+  const fmPct = totalR>0 ? Math.round(fmR/totalR*100) : 0;
+  const nbPct = totalR>0 ? Math.round(nbR/totalR*100) : 0;
+  document.getElementById('eb-badge').textContent = ebPct+'%';
+  document.getElementById('fm-badge').textContent = fmPct+'%';
+  document.getElementById('nb-badge').textContent = nbPct+'%';
+  document.getElementById('eb-mix-rev').textContent = fmt(ebR);
+  document.getElementById('fm-mix-rev').textContent = fmt(fmR);
+  document.getElementById('nb-mix-rev').textContent = fmt(nbR);
+  document.getElementById('eb-mix-net').textContent = 'Net: '+fmt(ebN);
+  document.getElementById('fm-mix-net').textContent = 'Net: '+fmt(fmN);
+  document.getElementById('nb-mix-net').textContent = 'Net: '+fmt(nbN);
+  document.getElementById('eb-mix-bar').style.width = ebPct+'%';
+  document.getElementById('fm-mix-bar').style.width = fmPct+'%';
+  document.getElementById('nb-mix-bar').style.width = nbPct+'%';
+
+  // Insight dinámico
+  const dominant = ebR>=fmR && ebR>=nbR ? 'Existing Business' : fmR>=nbR ? 'Farming' : 'New Business';
+  const nbMonths = sl(D.nb[rk],r).filter(v=>v>0).length;
+  const insightNB = nbMonths===0 ? 'New Business sin actividad en este período — riesgo de concentración.' : `New Business activo en ${nbMonths} mes(es) — dependencia de pipeline estructural.`;
+  document.getElementById('insight-text').innerHTML = `Pipeline concentrado en <strong>${dominant}</strong> (${dominant==='Existing Business'?ebPct:dominant==='Farming'?fmPct:nbPct}% del total). ${insightNB}`;
+
+  // Stack chart
+  bar('chartStack', labels, [
+    {label:'Existing Business', data:sl(D.eb[rk],r), backgroundColor:'#378ADD', borderRadius:3},
+    {label:'Farming',           data:sl(D.fm[rk],r), backgroundColor:'#1D9E75', borderRadius:3},
+    {label:'New Business',      data:sl(D.nb[rk],r), backgroundColor:'#D85A30', borderRadius:3}
+  ], true);
+
+  // Detail charts
+  bar('chartEB', labels, [
+    {label:'Rev', data:sl(D.eb[rk],r), backgroundColor:'#378ADD', borderRadius:3},
+    {label:'Net', data:sl(D.eb[nk],r), backgroundColor:'#B5D4F4', borderRadius:3}
+  ]);
+  bar('chartFM', labels, [
+    {label:'Rev', data:sl(D.fm[rk],r), backgroundColor:'#1D9E75', borderRadius:3},
+    {label:'Net', data:sl(D.fm[nk],r), backgroundColor:'#9FE1CB', borderRadius:3}
+  ]);
+  bar('chartNB', labels, [
+    {label:'Rev', data:sl(D.nb[rk],r), backgroundColor:'#D85A30', borderRadius:3},
+    {label:'Net', data:sl(D.nb[nk],r), backgroundColor:'#F5C4B3', borderRadius:3}
+  ]);
+
+  // Target chart (fixed FY)
+  if (CH['chartTarget']) CH['chartTarget'].destroy();
+  CH['chartTarget'] = new Chart(document.getElementById('chartTarget'), {
+    type:'bar',
+    data:{
+      labels:['FY Trend\nWon+Guar','YTD\nWon+Guar','Target\nOficial x3','Target\nStretch x5'],
+      datasets:[{
+        data:[SUM.fy_won_rev, SUM.ytd_won_rev, SUM.target_rev, SUM.stretch_rev],
+        backgroundColor:['#378ADD','#1D9E75','#E24B4A','#BA7517'], borderRadius:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},
+      scales:{
+        x:{ticks:{font:{size:10}, callback:v=>fmt(v)}, grid:{color:'rgba(128,128,128,0.07)'}},
+        y:{ticks:{font:{size:10}}, grid:{display:false}}
+      }
+    }
+  });
+}
+
+updateDash();
+</script>
